@@ -1,16 +1,24 @@
 import request from '@/utils/request'
 
-// 删除岗位
-/*注意！这里少了个/所以导致数据在前台老是拼接起来了正常的是一个1234这种不会是拼接到数据的后面*/
-export function delPost(postIds) {
+// 查询ProjectFee列表
+export function listFee(query) {
   return request({
-    url: '/his/projectFee/' + postIds,
-    method: 'delete'
+    url: '/his/projectFee/list',
+    method: 'get',
+    params: query
   })
 }
 
-// 新增岗位
-export function addPost(data) {
+// 查询ProjectFee详细
+export function getFee(projectId) {
+  return request({
+    url: '/his/projectFee/' + projectId,
+    method: 'get'
+  })
+}
+
+// 新增ProjectFee
+export function addFee(data) {
   return request({
     url: '/his/projectFee',
     method: 'post',
@@ -18,43 +26,8 @@ export function addPost(data) {
   })
 }
 
-  // 查询岗位列表
-  export function listSub() {
-    return request({
-      url: '/his/projectFee/type',
-      method: 'get'
-    })
-  }
-
-// 查询岗位列表
-  export function listPost(query) {
-    return request({
-      url: '/his/projectFee/list',
-      method: 'get',
-      params: query
-    })
-  }
-
-// 导出岗位
-  export function exportPost(query) {
-    return request({
-      url: '/system/post/export',
-      method: 'get',
-      params: query
-    })
-  }
-
-
-// 查询岗位详细
-export function getPost(postId) {
-  return request({
-    url: '/his/projectFee/' + postId,
-    method: 'get'
-  })
-}
-
-// 修改岗位
-export function updatePost(data) {
+// 修改ProjectFee
+export function updateFee(data) {
   return request({
     url: '/his/projectFee',
     method: 'put',
@@ -62,5 +35,19 @@ export function updatePost(data) {
   })
 }
 
+// 删除ProjectFee
+export function delFee(projectId) {
+  return request({
+    url: '/his/projectFee/' + projectId,
+    method: 'delete'
+  })
+}
 
-
+// 导出ProjectFee
+export function exportFee(query) {
+  return request({
+    url: '/his/projectFee/export',
+    method: 'get',
+    params: query
+  })
+}
