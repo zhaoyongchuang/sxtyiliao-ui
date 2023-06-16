@@ -19,70 +19,28 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="项目费用" prop="projectUnitprice">
-        <el-input
-          v-model="queryParams.projectUnitprice"
-          placeholder="请输入项目费用"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="状态" clearable size="small">
+          <el-option
+            v-for="dict in statusOptions1"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
       </el-form-item>
-      <el-form-item label="项目成本" prop="projectCost">
-        <el-input
-          v-model="queryParams.projectCost"
-          placeholder="请输入项目成本"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="项目单位" prop="projectTimes">
-        <el-input
-          v-model="queryParams.projectTimes"
-          placeholder="请输入项目单位"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+<!--实现岗位类型查询功能-->
       <el-form-item label="项目类型" prop="projectType">
-        <el-select v-model="queryParams.projectType" placeholder="请选择项目类型" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+        <el-select v-model="queryParams.projectType" placeholder="项目类型" clearable size="small">
+          <el-option
+            v-for="dict in statusOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属部门的id" prop="projectDeptId">
-        <el-input
-          v-model="queryParams.projectDeptId"
-          placeholder="请输入所属部门的id"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="执行状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择执行状态" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="扩展字段1" prop="ext01">
-        <el-input
-          v-model="queryParams.ext01"
-          placeholder="请输入扩展字段1"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="扩展字段2" prop="ext02">
-        <el-input
-          v-model="queryParams.ext02"
-          placeholder="请输入扩展字段2"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -143,12 +101,27 @@
       <el-table-column label="项目费用" align="center" prop="projectUnitprice" />
       <el-table-column label="项目成本" align="center" prop="projectCost" />
       <el-table-column label="项目单位" align="center" prop="projectTimes" />
+
       <el-table-column label="项目类型" align="center" prop="projectType" />
-      <el-table-column label="所属部门的id" align="center" prop="projectDeptId" />
-      <el-table-column label="执行状态" align="center" prop="status" />
-      <el-table-column label="扩展字段1" align="center" prop="ext01" />
-      <el-table-column label="扩展字段2" align="center" prop="ext02" />
-      <el-table-column label="备注" align="center" prop="remark" />
+<!--        <template slot-scope="scope">-->
+<!--          <span>{{ scope.row.projectType}}</span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+
+      <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat">
+        <template slot-scope="scope">
+          <span>{{ scope.row.status==1?"停用":"正常"}}</span>
+        </template>
+      </el-table-column>
+
+
+
+<!--      <el-table-column label="备注" align="center" prop="remark" />-->
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -196,27 +169,20 @@
           <el-input v-model="form.projectTimes" placeholder="请输入项目单位" />
         </el-form-item>
         <el-form-item label="项目类型" prop="projectType">
-          <el-select v-model="form.projectType" placeholder="请选择项目类型">
-            <el-option label="请选择字典生成" value="" />
-          </el-select>
+          <el-input v-model="form.projectType" placeholder="请输入项目类型" />
         </el-form-item>
-        <el-form-item label="所属部门的id" prop="projectDeptId">
-          <el-input v-model="form.projectDeptId" placeholder="请输入所属部门的id" />
-        </el-form-item>
-        <el-form-item label="执行状态">
+
+        <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio label="1">请选择字典生成</el-radio>
+            <el-radio
+              v-for="dict in statusOptions1"
+              :key="dict.dictValue"
+              :label="dict.dictValue"
+            >{{dict.dictLabel}}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="扩展字段1" prop="ext01">
-          <el-input v-model="form.ext01" placeholder="请输入扩展字段1" />
-        </el-form-item>
-        <el-form-item label="扩展字段2" prop="ext02">
-          <el-input v-model="form.ext02" placeholder="请输入扩展字段2" />
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
+
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -230,7 +196,12 @@
 import { listFee, getFee, delFee, addFee, updateFee, exportFee } from "@/api/his/projectFee";
 
 export default {
-  name: "Fee",
+  name: "Post",
+  computed: {
+    dict() {
+      return dict
+    }
+  },
   components: {
   },
   data() {
@@ -248,7 +219,9 @@ export default {
       // 总条数
       total: 0,
       // ProjectFee表格数据
-      feeList: [],
+      postList: [],
+      statusOptions: [],
+      statusOptions1: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -265,8 +238,7 @@ export default {
         projectType: null,
         projectDeptId: null,
         status: null,
-        ext01: null,
-        ext02: null,
+
       },
       // 表单参数
       form: {},
@@ -288,7 +260,13 @@ export default {
     };
   },
   created() {
-    this.getList();
+    this.getList();//查询所有数据
+    this.getDicts("sys_normal_types").then(response => {
+      this.statusOptions = response.data;
+    });
+    this.getDicts("sys_normal_disable").then(response => {
+      this.statusOptions1 = response.data;
+    });
   },
   methods: {
     /** 查询ProjectFee列表 */
@@ -300,6 +278,15 @@ export default {
         this.loading = false;
       });
     },
+    // 岗位状态字典翻译
+    statusFormat(row, column) {
+      return this.selectDictLabel(this.statusOptions, row.status);
+    },
+    // 项目类型字典翻译
+    projectTypeFormat(row, column) {
+      return this.selectDictLabel(this.statusOptions1, row.projectType);
+    },
+
     // 取消按钮
     cancel() {
       this.open = false;
@@ -317,8 +304,6 @@ export default {
         projectType: null,
         projectDeptId: null,
         status: "0",
-        ext01: null,
-        ext02: null,
         createBy: null,
         createTime: null,
         updateBy: null,
@@ -347,7 +332,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加ProjectFee";
+      this.title = "添加检查费用项目";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -382,7 +367,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const projectIds = row.projectId || this.ids;
-      this.$confirm('是否确认删除ProjectFee编号为"' + projectIds + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除费用编号为"' + projectIds + '"的数据项?', "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -396,7 +381,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
-      this.$confirm('是否确认导出所有ProjectFee数据项?', "警告", {
+      this.$confirm('是否确认导出所有费用项目数据项', "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"

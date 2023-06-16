@@ -21,6 +21,8 @@
           />
         </el-select>
       </el-form-item>
+
+
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -83,6 +85,7 @@
       <el-table-column label="电话" align="center" prop="deptPhone" />
       <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
@@ -145,6 +148,8 @@
             >{{dict.dictLabel}}</el-radio>
           </el-radio-group>
         </el-form-item>
+
+
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
