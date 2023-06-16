@@ -31,14 +31,13 @@
       </el-form-item>
 <!--实现岗位类型查询功能-->
       <el-form-item label="项目类型" prop="projectType">
-        <el-select v-model="queryParams.projectType" placeholder="项目类型" clearable size="small">
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
+        <el-input
+          v-model="queryParams.projectType"
+          placeholder="请输入项目类型"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
 
       <el-form-item>
