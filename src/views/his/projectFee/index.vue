@@ -40,6 +40,7 @@
         />
       </el-form-item>
 
+
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -192,7 +193,7 @@
 </template>
 
 <script>
-import { listFee, getFee, delFee, addFee, updateFee, exportFee } from "@/api/his/projectFee";
+import {addFee, delFee, exportFee, getFee, listFee, updateFee} from "@/api/his/projectFee";
 
 export default {
   name: "Post",
