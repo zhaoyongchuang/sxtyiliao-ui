@@ -281,6 +281,7 @@ export default {
     // 岗位状态字典翻译
     statusFormat(row, column) {
       return this.selectDictLabel(this.statusOptions, row.status);
+        // return this.selectDictLabel(this.statusOptions, row.projectType);
     },
     // 项目类型字典翻译
     projectTypeFormat(row, column) {
