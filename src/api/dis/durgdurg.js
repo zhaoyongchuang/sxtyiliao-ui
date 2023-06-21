@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询durgdurg列表
 export function listDurgdurg(query) {
   return request({
-    url: '/his/durgdurg/list',
+    url: '/dis/durgdurg/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listDurgdurg(query) {
 // 查询durgdurg详细
 export function getDurgdurg(durgId) {
   return request({
-    url: '/his/durgdurg/' + durgId,
+    url: '/dis/durgdurg/' + durgId,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getDurgdurg(durgId) {
 // 新增durgdurg
 export function addDurgdurg(data) {
   return request({
-    url: '/his/durgdurg',
+    url: '/dis/durgdurg',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addDurgdurg(data) {
 // 修改durgdurg
 export function updateDurgdurg(data) {
   return request({
-    url: '/his/durgdurg',
+    url: '/dis/durgdurg',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updateDurgdurg(data) {
 // 删除durgdurg
 export function delDurgdurg(durgId) {
   return request({
-    url: '/his/durgdurg/' + durgId,
+    url: '/dis/durgdurg/' + durgId,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export function delDurgdurg(durgId) {
 // 导出durgdurg
 export function exportDurgdurg(query) {
   return request({
-    url: '/his/durgdurg/export',
+    url: '/dis/durgdurg/export',
     method: 'get',
     params: query
   })
