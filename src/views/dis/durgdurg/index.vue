@@ -10,14 +10,15 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="药品类型" prop="durgType">
-        <el-select v-model="queryParams.durgType" clearable placeholder="请选择药品类型" size="small">
-          <el-option label="请选择字典生成" value=""/>
-        </el-select>
-      </el-form-item>
       <el-form-item label="处方类型" prop="durgOtcType">
-        <el-select v-model="queryParams.durgOtcType" clearable placeholder="请选择处方类型" size="small">
-          <el-option label="请选择字典生成" value=""/>
+        <el-select v-model="queryParams.durgOtcType" placeholder="处方类型">
+          <el-option
+            v-for="dict in durgOtcTypeOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+            @keyup.enter.native="handleQuery"
+          />
         </el-select>
       </el-form-item>
 
@@ -28,6 +29,7 @@
             :key="dict.dictValue"
             :label="dict.dictLabel"
             :value="dict.dictValue"
+            @keyup.enter.native="handleQuery"
           />
         </el-select>
       </el-form-item>
@@ -89,20 +91,30 @@
 
     <el-table v-loading="loading" :data="durgdurgList" @selection-change="handleSelectionChange">
       <el-table-column align="center" type="selection" width="55"/>
-      <el-table-column align="center" label="药品ID" prop="durgId"/>
+
       <el-table-column align="center" label="药品名称" prop="durgName"/>
       <el-table-column align="center" label="药品编码" prop="durgCode"/>
-      <el-table-column align="center" label="生产厂家" prop="drugProducer.proName"/>
-      <el-table-column align="center" label="药品类型" prop="durgType"/>
-      <el-table-column align="center" label="处方类型" prop="durgOtcType"/>
+      <el-table-column align="center" label="生产厂家" prop="drugProducer.proName" width="100"></el-table-column>
+      <el-table-column :formatter="TypeFormat" align="center" label="药品类型" prop="durgType"/>
+      <el-table-column :formatter="durgOtcTypeFormat" align="center" label="处方类型" prop="durgOtcType"/>
       <el-table-column align="center" label="单位g" prop="durgUnit"/>
       <el-table-column align="center" label="处方价格" prop="durgOtcPrice"/>
-      <el-table-column align="center" label="库存量" prop="durgNumber"/>
-      <el-table-column align="center" label="预警值" prop="durgNumberMin"/>
-      <el-table-column align="center" label="换算量" prop="durgConvert"/>
-      <el-table-column align="center" label="状态" prop="durgStatus"/>
-      <el-table-column align="center" label="备注" prop="remark"/>
+      <el-table-column align="center" label="创建时间" prop="createTime">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime) }}</span>
+        </template>
+      </el-table-column>
+
+
+      <el-table-column :formatter="statusFormat" align="center" label="状态" prop="durgStatus"/>
+      <!--        <template slot-scope="scope">-->
+      <!--          <span>{{ scope.row.status==1?"停用":"正常"}}</span>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
+
+
       <el-table-column align="center" class-name="small-padding fixed-width" label="操作">
+
         <template slot-scope="scope">
           <el-button
             v-hasPermi="['dis:durgdurg:edit']"
@@ -141,17 +153,40 @@
         <el-form-item label="药品编码" prop="durgCode">
           <el-input v-model="form.durgCode" placeholder="请输入药品编码"/>
         </el-form-item>
-        <el-form-item label="生产厂家" prop="durgProducer">
-          <el-input v-model="form.durgProducer" placeholder="请输入生产厂家"/>
-        </el-form-item>
+
+        <!--                <el-form-item label="生产厂家编码" prop="drugsProducer.proCode">-->
+        <!--                    <el-input v-model="form.drugProducer.proCode" placeholder="请输入生产厂家编码"/>-->
+        <!--                </el-form-item>-->
+
+        <!--                <el-form-item label="生产厂家" prop="drugProducer.proName">-->
+        <!--                          <el-select v-model="queryParams.proId" placeholder="请输入生产厂家" clearable size="small">-->
+        <!--                            <el-option-->
+        <!--                              v-for="dict in listproname"-->
+        <!--                              :key="dict.drugProducer.proId"-->
+        <!--                              :label="dict.drugProducer.proName"-->
+        <!--                              :value="dict.drugProducer.proName"-->
+        <!--                            />-->
+        <!--                          </el-select>-->
+        <!--                </el-form-item>-->
+
         <el-form-item label="药品类型" prop="durgType">
           <el-select v-model="form.durgType" placeholder="请选择药品类型">
-            <el-option label="请选择字典生成" value=""/>
+            <el-option
+              v-for="dict in durgTypeOptions"
+              :key="dict.dictValue"
+              :label="dict.dictLabel"
+              :value="dict.dictValue"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="处方类型" prop="durgOtcType">
           <el-select v-model="form.durgOtcType" placeholder="请选择处方类型">
-            <el-option label="请选择字典生成" value=""/>
+            <el-option
+              v-for="dict in durgOtcTypeOptions"
+              :key="dict.dictValue"
+              :label="dict.dictLabel"
+              :value="dict.dictValue"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="单位g" prop="durgUnit">
@@ -160,79 +195,17 @@
         <el-form-item label="处方价格" prop="durgOtcPrice">
           <el-input v-model="form.durgOtcPrice" placeholder="请输入处方价格"/>
         </el-form-item>
-        <el-form-item label="库存量" prop="durgNumber">
-          <el-input v-model="form.durgNumber" placeholder="请输入库存量"/>
-        </el-form-item>
-        <el-form-item label="预警值" prop="durgNumberMin">
-          <el-input v-model="form.durgNumberMin" placeholder="请输入预警值"/>
-        </el-form-item>
-        <el-form-item label="换算量" prop="durgConvert">
-          <el-input v-model="form.durgConvert" placeholder="请输入换算量"/>
-        </el-form-item>
+
+
         <el-form-item label="状态">
           <el-radio-group v-model="form.durgStatus">
-            <el-radio label="1">请选择字典生成</el-radio>
+            <el-radio label="0">正常</el-radio>
+            <el-radio label="1">停用</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" placeholder="请输入备注"/>
-        </el-form-item>
-        <el-divider content-position="center">${subTable.functionName}信息</el-divider>
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5">
-            <el-button icon="el-icon-plus" size="mini" type="primary" @click="handleAddDrugsProducer">添加</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button icon="el-icon-delete" size="mini" type="danger" @click="handleDeleteDrugsProducer">删除
-            </el-button>
-          </el-col>
-        </el-row>
-        <el-table ref="drugsProducer" :data="drugsProducerList"
-                  :row-class-name="rowDrugsProducerIndex" @selection-change="handleDrugsProducerSelectionChange">
-          <el-table-column align="center" type="selection" width="50"/>
-          <el-table-column align="center" label="序号" prop="index" width="50"/>
-          <el-table-column label="厂家名称" prop="proName">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proName" placeholder="请输入厂家名称"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="厂家编码" prop="proCode">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proCode" placeholder="请输入厂家编码"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="联系人" prop="proBoss">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proBoss" placeholder="请输入联系人"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="手机号" prop="proPhone">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proPhone" placeholder="请输入手机号"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="关键字" prop="proKeywords">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proKeywords" placeholder="请输入关键字"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" prop="proStatus">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proStatus" placeholder="请输入状态"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="备注" prop="remark">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.remark" placeholder="请输入备注"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="厂家地址" prop="proAddress">
-            <template slot-scope="scope">
-              <el-input v-model="scope.row.proAddress" placeholder="请输入厂家地址"/>
-            </template>
-          </el-table-column>
-        </el-table>
       </el-form>
+
+
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
@@ -242,7 +215,8 @@
 </template>
 
 <script>
-import {addDurgdurg, delDurgdurg, exportDurgdurg, getDurgdurg, listDurgdurg, updateDurgdurg} from "@/api/dis/durgdurg";
+import {addDurgdurg, delDurgdurg, exportDurgdurg, getDurgdurg, listDurgdurg} from "@/api/dis/durgdurg";
+import {parseTime} from "../../../utils/ruoyi";
 
 export default {
   name: "Durgdurg",
@@ -269,6 +243,10 @@ export default {
       drugsProducerList: [],
       statusOptions: [],
       statusOptions1: [],
+
+      durgOtcTypeOptions: [],
+      durgTypeOptions: [],
+      listproname: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -295,10 +273,26 @@ export default {
       rules: {}
     };
   },
-  created() {
+  created() { //created是vue中生命周期中的一个函数，进入页面后会自动执行
     this.getList();
+    this.getDicts("sys_normal_disable").then(response => {
+      this.statusOptions = response.data;
+    });
+    // this.getDicts("sys_normal_disable").then(response => {
+    //   this.statusOptions1 = response.data;
+    // });
+    this.getDicts("hisdrug_drug").then(response => {
+        this.durgOtcTypeOptions = response.data;
+      }
+    )
+    this.getDicts("hisdrug_drug_type").then(response => {
+        this.durgTypeOptions = response.data;
+      }
+    )
+
   },
   methods: {
+    parseTime,
     /** 查询durgdurg列表 */
     getList() {
       this.loading = true;
@@ -307,6 +301,16 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
+    },
+    // 岗位状态字典翻译
+    statusFormat(row, column) {
+      return this.selectDictLabel(this.statusOptions, row.durgStatus);
+    },
+    TypeFormat(row, column) {
+      return this.selectDictLabel(this.durgTypeOptions, row.durgType);
+    },
+    durgOtcTypeFormat(row, column) {
+      return this.selectDictLabel(this.durgOtcTypeOptions, row.durgOtcType);
     },
     // 取消按钮
     cancel() {
@@ -357,7 +361,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加durgdurg";
+      this.title = "添加药品信息";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -394,7 +398,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const durgIds = row.durgId || this.ids;
-      this.$confirm('是否确认删除durgdurg编号为"' + durgIds + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除编号为"' + durgIds + '"的数据项?', "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -409,27 +413,7 @@ export default {
     rowDrugsProducerIndex({row, rowIndex}) {
       row.index = rowIndex + 1;
     },
-    /** ${subTable.functionName}添加按钮操作 */
-    handleAddDrugsProducer() {
-      let obj = {};
-      obj.proName = "";
-      obj.proCode = "";
-      obj.proBoss = "";
-      obj.proPhone = "";
-      obj.proKeywords = "";
-      obj.proStatus = "";
-      obj.remark = "";
-      obj.proAddress = "";
-      this.drugsProducerList.push(obj);
-    },
-    /** ${subTable.functionName}删除按钮操作 */
-    handleDeleteDrugsProducer() {
-      if (this.checkedDrugsProducer.length == 0) {
-        this.$alert("请先选择要删除的${subTable.functionName}数据", "提示", {confirmButtonText: "确定",});
-      } else {
-        this.drugsProducerList.splice(this.checkedDrugsProducer[0].index - 1, 1);
-      }
-    },
+
     /** 单选框选中数据 */
     handleDrugsProducerSelectionChange(selection) {
       if (selection.length > 1) {
@@ -442,7 +426,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
-      this.$confirm('是否确认导出所有durgdurg数据项?', "警告", {
+      this.$confirm('是否确认导出所有药品数据项?', "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
