@@ -45,3 +45,10 @@ export function delDrug(drugId) {
 
 // 新增
 
+
+export function getDrugBySupportId(supportId) {
+  return request({
+    url: '/pill/drug/bySupport/' + supportId,
+    method: 'get'
+  })
+}

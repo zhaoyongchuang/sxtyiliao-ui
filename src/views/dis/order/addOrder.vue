@@ -1,160 +1,113 @@
 <template>
   <div class="app-container">
-    <el-form v-show="showSearch" ref="queryForm" :inline="true" :model="queryParams" label-width="68px">
-      <el-form-item label="供应商" prop="supportName">
+    <el-form v-show="showSearch" ref="form" :inline="true" :model="form" label-width="68px">
+      <el-form-item label="总批发额" prop="orderTotal">
         <el-input
-          v-model="queryParams.supportName"
-          clearable
-          placeholder="请输入供应商名称"
+          v-model="form.supportName"
+          :disabled="true"
           size="small"
-          @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="申请人" prop="orderMan">
-        <el-input
-          v-model="queryParams.orderMan"
-          clearable
-          placeholder="请输入申请人"
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="申请状态" prop="detailStatus">
-        <el-select v-model="queryParams.detailStatus" clearable placeholder="明细状态" size="small">
+      <el-form-item label="供应商" prop="supportId">
+        <el-select v-model="form.supportId" clearable placeholder="供应商" size="small" @change="changeSupport">
           <el-option
-            v-for="dict in detailStatus"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
+            v-for="dict in supportnameList"
+            :key="dict.supportId"
+            :label="dict.supportName"
+            :value="dict.supportId"
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
-        <el-button icon="el-icon-search" size="mini" type="primary" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
     </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+    <el-row :gutter="24" class="mb8">
+      <el-col :span="1.5" offset="16">
         <el-button
-          :disabled="addOrder"
+          icon="el-icon-plus"
           plain
           size="mini"
           type="primary"
-          v-has-permi="['dis:order:add']">
-          <router-link to="/dis/order/addOrder">新增采购</router-link>
+        >添加药品
         </el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          :disabled="submitExam"
-          icon="el-icon-edit"
+          icon="el-icon-shopping-cart-2"
           plain
           size="mini"
           type="success"
-          @click="goToExamine"
-        >提交审核
+        >暂存
         </el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          :disabled="cancelOrder"
-          icon="el-icon-delete"
+          icon="el-icon-thumb"
           plain
           size="mini"
           type="danger"
-          @click="handleDelete"
-        >作废
+        >提交审核
         </el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          :disabled="puInStock"
-          icon="el-icon-download"
-          plain
-          size="mini"
-          type="success"
-          @click="handlePutInStock"
-        >提交入库
-        </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+
     </el-row>
 
-    <el-table v-loading="loading" :data="postList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="orderDetialList" @selection-change="handleSelectionChange">
       <el-table-column align="center" type="selection" width="55"/>
-      <el-table-column align="center" label="单据ID" prop="orderId"/>
-      <el-table-column align="center" label="供应商" prop="supportName"/>
+      <el-table-column align="center" label=行ID" prop="orderId"/>
+      <el-table-column align="center" label="药品ID" prop="supportName"/>
       <el-table-column align="center" label="药品名称" prop="durgName"/>
-      <el-table-column align="center" label="药品批次" prop="detailBathNum"/>
-      <el-table-column align="center" label="批次总额" prop="detailTotalPrice"/>
-      <el-table-column :formatter="detailFormat" align="center" label="状态" prop="detailStatus"/>
-      <el-table-column align="center" label="申请人" prop="orderMan"/>
-      <el-table-column align="center" label="入库操作人" prop="detailOperator"/>
-      <el-table-column align="center" label="入库时间" prop="detailDate" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.detailDate) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="创建时间" prop="createTime" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column align="center" label="规格" prop="durgName"/>
+      <el-table-column align="center" label="生产厂家" prop="detailBathNum"/>
+      <el-table-column align="center" label="进药数量" prop="detailTotalPrice"/>
+      <el-table-column align="center" label="单位" prop="orderMan"/>
+      <el-table-column align="center" label="进药单价" prop="detailOperator"/>
+      <el-table-column align="center" label="批发总额" prop="detailOperator"/>
+      <el-table-column align="center" label="入库时间" prop="detailOperator"/>
+
       <el-table-column align="center" class-name="small-padding fixed-width" label="操作">
         <template slot-scope="scope">
           <el-button
+            v-has-permi="['dis:order:edit']"
             icon="el-icon-edit"
             size="mini"
             type="text"
             @click="handleUpdate(scope.row)"
-          >
-            修改
-            <!--            <router-link :to="{path:'/his/drug/addOrder',query:{orderId:1}}">修改</router-link>-->
+          >修改
+          </el-button>
+          <el-button
+            v-has-permi="['dis:order:edit']"
+            icon="el-icon-edit"
+            size="mini"
+            type="text"
+            @click="handleUpdate(scope.row)"
+          >删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination
-      v-show="total>0"
-      :limit.sync="queryParams.pageSize"
-      :page.sync="queryParams.pageNum"
-      :total="total"
-      @pagination="getList"
-    />
-
-    <!-- 添加或修改岗位对话框 -->
+    <!--新增采购单对话框 -->
     <el-dialog :title="title" :visible.sync="open" append-to-body width="500px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="岗位名称" prop="postName">
-          <el-input v-model="form.postName" placeholder="请输入岗位名称"/>
-        </el-form-item>
-        <el-form-item label="岗位编码" prop="postCode">
-          <el-input v-model="form.postCode" placeholder="请输入编码名称"/>
-        </el-form-item>
-        <el-form-item label="岗位顺序" prop="postSort">
-          <el-input-number v-model="form.postSort" :min="0" controls-position="right"/>
-        </el-form-item>
-        <el-form-item label="岗位状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in detailStatusOptions"
-              :key="dict.dictValue"
-              :label="dict.dictValue"
-            >{{ dict.dictLabel }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" placeholder="请输入内容" type="textarea"/>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
-      </div>
+      <el-table v-loading="loading" :data="drugBySupportIdList" @selection-change="handleSelectionChange">
+        <el-table-column align="center" type="selection" width="55"/>
+        <el-table-column align="center" label="药品ID" prop="durgId"/>
+        <el-table-column align="center" label="药品名称" prop="durgName"/>
+        <el-table-column align="center" label="药品编码" prop="durgCode"/>
+        <el-table-column align="center" label="生产厂家" prop="pillFactory.proName" width="100"/>
+        <el-table-column :formatter="TypeFormat" align="center" label="药品类型" prop="durgType"/>
+        <el-table-column :formatter="durgOtcTypeFormat" align="center" label="处方类型" prop="durgOtcType"/>
+        <el-table-column align="center" label="单位g" prop="durgUnit"/>
+        <el-table-column align="center" label="处方价格" prop="durgOtcPrice"/>
+        <el-table-column align="center" label="处方价格" prop="durgOtcPrice"/>
+      </el-table>
+      <pagination
+        v-show="drugBySupportIdTotal> 0"
+        :limit.sync="queryParams.pageSize"
+        :page.sync="queryParams.pageNum"
+        :total="drugBySupportIdTotal"
+        @pagination="getAllDrugSupport"
+      >
+      </pagination>
     </el-dialog>
   </div>
 </template>
@@ -162,10 +115,12 @@
 <script>
 import {addPost, listPost, putInStock, updatePost, upDateStatus} from "@/api/dis/drug/purchaseAndPutIn";
 import {parseTime} from "@/utils";
+import {getAllDrugSupports} from "@/api/dis/drug/addOrder";
+import {getDrugBySupportId} from "@/api/dis/drug";
 
 
 export default {
-  name: "Post",
+  name: "addOrder",
   data() {
     return {
       //表格选中的数据
@@ -190,6 +145,9 @@ export default {
       total: 0,
       // 岗位表格数据
       postList: [],
+      orderDetialList: [],
+      drugBySupportIdList: [],
+      drugBySupportIdTotal: 0,
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -197,6 +155,7 @@ export default {
       // 状态数据字典
       detailStatusOptions: [],
       detailStatus: [],
+      supportnameList: [],//供应商列表
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -223,11 +182,49 @@ export default {
   },
   created() {
     this.getList();
+    this.getAllDrugSupport();
     this.getDicts("order_detail_status").then(response => {
       this.detailStatus = response.data;
     });
+    //   查询供应商列表
+    this.getSupportNameList();
   },
   methods: {
+    // 选择不同供应商
+    changeSupport(supportId) {
+      // alert(supportId);
+      // 查询供应商下的药品列表，根据供应商id查询所有可供应的药品，drug_support表 drug_pro_sup
+      // 供应商和生产厂商
+      // 表drug_producer,drugs_durg表
+      // 生产厂商和药品
+      this.getDrugListBySupportId(supportId);
+      this.open = true;
+      this.title = "药品信息";
+
+    },
+    TypeFormat(row, column) {
+      return this.selectDictLabel(this.durgTypeOptions, row.durgType);
+    },
+    durgOtcTypeFormat(row, column) {
+      return this.selectDictLabel(this.durgOtcTypeOptions, row.durgOtcType);
+    },
+    // 查询供应商列表===================================
+    getDrugListBySupportId(supportId) {
+      this.loading = true;
+      getDrugBySupportId(supportId).then(response1 => {
+        this.drugBySupportIdList = response1.rows;//获取供应商列表
+        this.drugBySupportIdTotal = response1.total;//获取供应商列表
+        this.loading = false;//关闭遮罩层
+      });
+
+    },
+    getAllDrugSupport() {
+      this.loading = true;
+      getAllDrugSupports().then(response => {
+        this.supportnameList = response.data;//获取供应商列表
+        this.loading = false;//关闭遮罩层
+      });
+    },
     //提交审核
     goToExamine() {
       let ids = "";
@@ -258,7 +255,7 @@ export default {
     getList() {
       this.loading = true;
       listPost(this.queryParams).then(response => {
-        this.postList = response.rows;
+        this.orderDetialList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -286,6 +283,8 @@ export default {
         remark: undefined,
         orderMan: undefined,
         supportName: undefined,
+        supportId: undefined,
+        orderTotal: 0.0,
 
       };
       this.resetForm("form");

@@ -1,11 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
-Vue.use(Router)
-
 /* Layout */
 import Layout from '@/layout'
-import ParentView from '@/components/ParentView';
+
+Vue.use(Router)
 
 /**
  * Note: 路由配置项
@@ -89,13 +87,23 @@ export const constantRoutes = [
         path: 'type/data/:dictId(\\d+)',
         component: (resolve) => require(['@/views/system/dict/data'], resolve),
         name: 'Data',
-        meta: { title: '字典数据', icon: '' }
+        meta: {title: '字典数据', icon: ''}
       }
     ]
   },
-
-
-
+  {
+    path: '/dis',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'order/addOrder',
+        component: (resolve) => require(['@/views/dis/order/addOrder'], resolve),
+        name: 'addOrder',
+        meta: {title: '新增采购入库单', icon: ''}
+      }
+    ]
+  },
 
 
   {
