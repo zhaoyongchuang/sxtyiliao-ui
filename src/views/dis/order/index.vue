@@ -19,7 +19,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="明细状态" prop="detailStatus">
+      <el-form-item label="申请状态" prop="detailStatus">
         <el-select v-model="queryParams.detailStatus" clearable placeholder="明细状态" size="small">
           <el-option
             v-for="dict in detailStatus"
@@ -308,7 +308,7 @@ export default {
       // console.log(selection)
       if (selection.length > 0) {
 
-        //先遍历一遍，如果有不为3的，就不能点击入库
+        //先遍历一遍，如果有不为的，就不能点击入库
         let okPutIn = false; //表示可以入库
         selection.forEach(item => {
           if (item.detailStatus != 3) {
