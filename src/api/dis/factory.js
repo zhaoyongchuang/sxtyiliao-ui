@@ -29,7 +29,7 @@ export function addFactory(data) {
 // 修改生产厂家信息
 export function updateFactory(data) {
   return request({
-    url: '/pill/factory',
+    url: '/dis/factory',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updateFactory(data) {
 // 删除生产厂家信息
 export function delFactory(factoryId) {
   return request({
-    url: '/pill/factory/' + factoryId,
+    url: '/dis/factory/' + factoryId,
     method: 'delete'
   })
 }

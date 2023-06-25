@@ -323,7 +323,7 @@
 </template>
 
 <script>
-import {addFactory, delFactory, getFactory, listFactory, updateFactory} from "@/api/pill/factory"
+import {addFactory, delFactory, getFactory, listFactory, updateFactory} from "@/api/dis/factory"
 
 export default {
   name: "Factory",
