@@ -19,7 +19,6 @@
         </el-select>
       </el-form-item>
     </el-form>
-
     <el-row :gutter="24" class="mb8">
       <el-col :span="1.5" offset="16">
         <el-button
@@ -51,44 +50,75 @@
 
     </el-row>
 
-    <el-table v-loading="loading" :data="orderDetialList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="orderDetialList" :model="orderDetialList">
       <el-table-column align="center" type="selection" width="55"/>
-      <el-table-column align="center" label=行ID" prop="orderId"/>
-      <el-table-column align="center" label="药品ID" prop="supportName"/>
+      <el-table-column align="center" label="行ID" type="index"/>
+      <el-table-column align="center" label="药品ID" prop="durgId"/>
       <el-table-column align="center" label="药品名称" prop="durgName"/>
-      <el-table-column align="center" label="规格" prop="durgName"/>
-      <el-table-column align="center" label="生产厂家" prop="detailBathNum"/>
-      <el-table-column align="center" label="进药数量" prop="detailTotalPrice"/>
-      <el-table-column align="center" label="单位" prop="orderMan"/>
-      <el-table-column align="center" label="进药单价" prop="detailOperator"/>
-      <el-table-column align="center" label="批发总额" prop="detailOperator"/>
-      <el-table-column align="center" label="入库时间" prop="detailOperator"/>
+      <el-table-column align="center" label="药品编码" prop="durgCode"/>
+      <el-table-column align="center" label="生产厂家" prop="pillFactory.proName"/>
+      <el-table-column :formatter="TypeFormat" align="center" label="药品类型" prop="durgType"/>
+      <el-table-column :formatter="durgOtcTypeFormat" align="center" label="处方类型" prop="durgOtcType"/>
+      <el-table-column align="center" label="单位g" prop="durgUnit"/>
+      <el-table-column align="center" label="批次号" prop="detailBathNum">
+        <template slot-scope="scope">
+          <el-input
+            v-model="scope.row.detailBathNum"
+            size="small"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="批发单价" prop="detailDrugPrice">
+        <template slot-scope="scope">
+          <el-input-number v-model="scope.row.detailDrugPrice" :min="0"
+                           size="small" @change="changeDrugPrice(scope.row)">
+          </el-input-number>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="进药数量" prop="detailDrugNum">
+        <template slot-scope="scope">
+          <el-input-number v-model="scope.row.detailDrugNum" :min="1"
+                           size="small">
+            <!--                           @change="changeDrugNum(scope.row)">-->
+          </el-input-number>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="批发总额" prop="detailTotalPrice">
+        <template slot-scope="scope">
+          <el-input
+            v-model="scope.row.detailTotalPrice"
+            :disabled="true"
+            :value="scope.row.detailDrugNum*scope.row.detailDrugPrice"
+            size="small"
+          />
+        </template>
+      </el-table-column>
 
-      <el-table-column align="center" class-name="small-padding fixed-width" label="操作">
+      <el-table-column align="center" label="操作">
         <template slot-scope="scope">
           <el-button
-            v-has-permi="['dis:order:edit']"
             icon="el-icon-edit"
             size="mini"
             type="text"
-            @click="handleUpdate(scope.row)"
+            @click="handleModifyDetail(scope.row)"
           >修改
           </el-button>
           <el-button
-            v-has-permi="['dis:order:edit']"
-            icon="el-icon-edit"
+            icon="el-icon-delete"
             size="mini"
             type="text"
-            @click="handleUpdate(scope.row)"
+            @click="handleDeleteDetail(scope.row)"
           >删除
           </el-button>
         </template>
+
       </el-table-column>
+
     </el-table>
 
-    <!--新增采购单对话框 -->
-    <el-dialog :title="title" :visible.sync="open" append-to-body width="500px">
-      <el-table v-loading="loading" :data="drugBySupportIdList" @selection-change="handleSelectionChange">
+
+    <el-dialog :title="title" :visible.sync="open" append-to-body width="900px">
+      <el-table v-loading="loading" :data="drugBySupportList" @selection-change="handleDrugSelectionChange">
         <el-table-column align="center" type="selection" width="55"/>
         <el-table-column align="center" label="药品ID" prop="durgId"/>
         <el-table-column align="center" label="药品名称" prop="durgName"/>
@@ -97,18 +127,52 @@
         <el-table-column :formatter="TypeFormat" align="center" label="药品类型" prop="durgType"/>
         <el-table-column :formatter="durgOtcTypeFormat" align="center" label="处方类型" prop="durgOtcType"/>
         <el-table-column align="center" label="单位g" prop="durgUnit"/>
-        <el-table-column align="center" label="处方价格" prop="durgOtcPrice"/>
-        <el-table-column align="center" label="处方价格" prop="durgOtcPrice"/>
       </el-table>
       <pagination
-        v-show="drugBySupportIdTotal> 0"
+        v-show="drugBySupportTotal> 0"
         :limit.sync="queryParams.pageSize"
         :page.sync="queryParams.pageNum"
-        :total="drugBySupportIdTotal"
-        @pagination="getAllDrugSupport"
+        :total="drugBySupportTotal"
+        @pagination="getDrugListBySupportId"
       >
       </pagination>
     </el-dialog>
+
+    <el-dialog :title="title" :visible.sync="orderDetailOpen" append-to-body width="600px">
+      <el-form ref="orderDetail" :model="orderDetail" :rules="rules" label-width="80px">
+        <el-form-item align="center" label="药品名称" prop="detailDrugPrice">
+          <el-input v-model="orderDetail.durgName"/>
+        </el-form-item>
+        <el-form-item align="center" label="批次号" prop="detailDrugNum">
+          <el-input v-model="orderDetail.detailBathNum"/>
+        </el-form-item>
+        <el-form-item align="center" label="批发单价" prop="detailDrugPrice">
+          <el-input v-model="orderDetail.detailDrugPrice"/>
+        </el-form-item>
+        <el-form-item align="center" label="进药数量" prop="detailDrugNum">
+          <el-input v-model="orderDetail.detailDrugNum"/>
+        </el-form-item>
+        <el-form-item align="center" label="批发总额" prop="detailTotalPrice">
+          <template slot-scope="scope">
+            <el-input
+              v-model="scope.orderDetail.detailTotalPrice"
+              :disabled="true"
+              :value="scope.orderDetail.detailDrugNum*scope.orderDetail.detailDrugPrice"
+              size="small"
+            />
+          </template>
+        </el-form-item>
+
+        <!--        确定 和取消按钮-->
+        <el-form-item align="center">
+          <el-button type="primary" @click="submitFormOrderDetail">确定</el-button>
+          <el-button @click="cancelOrderDetail">取消</el-button>
+        </el-form-item>
+
+      </el-form>
+    </el-dialog>
+
+
   </div>
 </template>
 
@@ -117,7 +181,7 @@ import {addPost, listPost, putInStock, updatePost, upDateStatus} from "@/api/dis
 import {parseTime} from "@/utils";
 import {getAllDrugSupports} from "@/api/dis/drug/addOrder";
 import {getDrugBySupportId} from "@/api/dis/drug";
-
+import {listFactory} from "@/api/dis/factory";
 
 export default {
   name: "addOrder",
@@ -142,27 +206,34 @@ export default {
       // 显示搜索条件
       showSearch: true,
       // 总条数
-      total: 0,
+      // total: 0,
       // 岗位表格数据
       postList: [],
       orderDetialList: [],
-      drugBySupportIdList: [],
-      drugBySupportIdTotal: 0,
+      drugBySupportList: [],
+      drugBySupportTotal: 0,
+      currenSupportId: 0,
+      factoryList: [],
       // 弹出层标题
-      title: "",
+      title: "药品信息列表",
       // 是否显示弹出层
       open: false,
       // 状态数据字典
       detailStatusOptions: [],
       detailStatus: [],
       supportnameList: [],//供应商列表
+      orderDetail: [],//正在采购单
+      orderDetailOpen: false,//采购框
+
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         supportName: undefined,
-        applyMan: undefined,
-        orderDetailStatus: undefined
+        orderMan: undefined,
+        orderDetailStatus: undefined,
+        supportId: undefined,
+        durgId: undefined,
       },
       // 表单参数
       form: {},
@@ -183,13 +254,44 @@ export default {
   created() {
     this.getList();
     this.getAllDrugSupport();
+    this.getFactoryList()
+    // this.getDrugListBySupportId(supportId)
     this.getDicts("order_detail_status").then(response => {
       this.detailStatus = response.data;
     });
+    this.getDicts("hisdrug_drug").then(response => {
+        this.durgOtcTypeOptions = response.data;
+      }
+    )
+    this.getDicts("hisdrug_drug_type").then(response => {
+        this.durgTypeOptions = response.data;
+      }
+    )
+
     //   查询供应商列表
     this.getSupportNameList();
   },
   methods: {
+    handleModifyDetail(row) {
+      //   打开一个对话框
+      this.resetOrderDetail()
+      this.orderDetailOpen = true;
+      this.orderDetail = row;
+      this.orderDetail.durgName = row.durgName;
+      this.orderDetail.durgId = row.durgId;
+      this.orderDetail.durgProducer = row.durgProducer;
+      this.orderDetail.detailDrugPrice = row.detailDrugPrice;
+      this.orderDetail.detailDrugNum = row.detailDrugNum;
+      this.orderDetail.detailTotalPrice = row.detailTotalPrice;
+      this.orderDetail.detailBathNum = row.detailBathNum;
+    },
+
+    handleDrugSelectionChange(selection) {
+      this.orderDetialList = selection;
+      for (var i = 0; i < this.orderDetialList.length; i++) {
+        this.orderDetialList[i].detailTotalPrice = 0;
+      }
+    },
     // 选择不同供应商
     changeSupport(supportId) {
       // alert(supportId);
@@ -197,6 +299,15 @@ export default {
       // 供应商和生产厂商
       // 表drug_producer,drugs_durg表
       // 生产厂商和药品
+      // 判断是否一致
+      if ((supportId) !== this.currenSupportId) {
+        //   清空表格
+        this.orderDetialList = [];
+      }
+      // 记录当前供应商id
+      this.currenSupportId = supportId;
+
+
       this.getDrugListBySupportId(supportId);
       this.open = true;
       this.title = "药品信息";
@@ -211,12 +322,11 @@ export default {
     // 查询供应商列表===================================
     getDrugListBySupportId(supportId) {
       this.loading = true;
-      getDrugBySupportId(supportId).then(response1 => {
-        this.drugBySupportIdList = response1.rows;//获取供应商列表
-        this.drugBySupportIdTotal = response1.total;//获取供应商列表
+      getDrugBySupportId(supportId).then(response => {
+        this.drugBySupportList = response.rows;//获取供应商列表
+        this.drugBySupportTotal = response.total;//获取供应商列表
         this.loading = false;//关闭遮罩层
       });
-
     },
     getAllDrugSupport() {
       this.loading = true;
@@ -267,10 +377,32 @@ export default {
     detailFormat(row, column) {
       return this.selectDictLabel(this.detailStatus, row.detailStatus);
     },
+    getFactoryList() {
+      listFactory().then(response => {
+        this.factoryList = response.rows
+      })
+    },
     // 取消按钮
     cancel() {
       this.open = false;
       this.reset();
+    },
+    cancelOrderDetail() {
+      this.orderDetailOpen = false;
+      this.resetOrderDetail();
+    },
+    resetOrderDetail() {
+      this.orderDetail = {
+        ind: 0,
+        durgName: undefined,
+        durgId: undefined,
+        durgCode: undefined,
+        detailDrugPrice: undefined,
+        detailDrugNum: undefined,
+        detailTotalPrice: undefined,
+        detailBathNum: undefined
+      };
+      this.resetForm("resetOrderDetail");
     },
     // 表单重置
     reset() {
@@ -358,6 +490,26 @@ export default {
         }
       });
     },
+    //确定按钮
+    submitFormOrderDetail: function () {
+      if (valid) {
+        if (this.orderDetail.detailId != undefined) {
+          (this.orderDetail).then(response => {
+            this.msgSuccess("修改成功");
+            this.orderDetailOpen = false;
+            this.getList();
+          });
+        } else {
+          (this.orderDetail).then(response => {
+            this.msgSuccess("新增成功");
+            this.orderDetailOpen = false;
+            this.getList();
+          });
+        }
+      }
+    },
+
+
     /** 作废按钮操作 */
     handleDelete(row) {
       let ids = "";

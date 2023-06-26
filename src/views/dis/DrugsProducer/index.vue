@@ -47,8 +47,9 @@
         />
       </el-form-item>
       <el-form-item label="状态" prop="proStatus">
-        <el-select v-model="queryParams.proStatus" clearable placeholder="请选择状态" size="small">
-          <el-option label="请选择字典生成" value=""/>
+        <el-select v-model="queryParams.proStatus" placeholder="请选择状态" size="small" @change="handleQuery">
+          <el-option label="启用" value="1"/>
+          <el-option label="停用" value="0"/>
         </el-select>
       </el-form-item>
       <el-form-item label="厂家地址" prop="proAddress">
@@ -124,7 +125,12 @@
       <el-table-column align="center" label="联系人" prop="proBoss"/>
       <el-table-column align="center" label="手机号" prop="proPhone"/>
       <el-table-column align="center" label="关键字" prop="proKeywords"/>
-      <el-table-column align="center" label="状态" prop="proStatus"/>
+      <el-table-column align="center" label="状态" prop="proStatus">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.proStatus === '1'" size="mini" type="success">正常</el-tag>
+          <el-tag v-if="scope.row.proStatus === '0'" size="mini" type="danger">停用</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="备注" prop="remark"/>
       <el-table-column align="center" label="厂家地址" prop="proAddress"/>
       <el-table-column align="center" class-name="small-padding fixed-width" label="操作">
@@ -177,7 +183,8 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="form.proStatus">
-            <el-radio label="1">请选择字典生成</el-radio>
+            <el-radio :label="1">启用</el-radio>
+            <el-radio :label="0">禁用</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">

@@ -37,7 +37,6 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['his:dept:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -48,7 +47,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['system:post:edit']"
+          v-hasPermi="['his:dept:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -59,7 +58,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:post:remove']"
+          v-hasPermi="['his:dept:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -121,14 +120,17 @@
     <!-- 添加或修改岗位对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="科室编号" prop="deptId">
+          <el-input v-model="form.deptId" disabled placeholder="科室编号"/>
+        </el-form-item>
         <el-form-item label="科室名称" prop="deptName">
-          <el-input v-model="form.deptName" placeholder="请输入科室名称" />
+          <el-input v-model="form.deptName" placeholder="请输入科室名称"/>
         </el-form-item>
         <el-form-item label="科室编码" prop="deptCode">
-          <el-input v-model="form.deptCode" placeholder="请输入编码名称" />
+          <el-input v-model="form.deptCode" placeholder="请输入编码名称"/>
         </el-form-item>
         <el-form-item label="负责人" prop="deptLeader">
-          <el-input v-model="form.deptLeader" controls-position="right" />
+          <el-input v-model="form.deptLeader" controls-position="right"/>
         </el-form-item>
 
         <el-form-item label="电话" prop="deptPhone">
@@ -163,7 +165,7 @@
 </template>
 
 <script>
-import { listPost, getPost, delPost, addPost, updatePost, exportPost } from "@/api/his/dept";
+import {addPost, delPost, exportPost, getPost, listPost, updatePost} from "@/api/his/dept";
 
 export default {
   name: "Post",
